@@ -152,8 +152,7 @@ Lemma transpose_l_fixed : #|`fixed_fsetN4 P2p_l transpose_l| = 0.
 Proof. 
   have fset_eq_0 : fixed_fsetN4 P2p_l transpose_l = fset0; [|by rewrite fset_eq_0].
   rewrite /fixed_fsetN4 /fixed_fset. apply (elimT eqP). rewrite -fsubset0.
-  destruct (_ `<=` fset0) eqn: hsubset.
-    by [].
+  by_contradiction hsubset.
     apply (introT negPf) in hsubset. apply (elimT (fsubsetPn _ _)) in hsubset.
       destruct hsubset as [[[a1 f1] [a2 f2]] hin _]. rewrite !inE in hin.
       destruct_boolhyp hin. simpl in *. move => htpl hf1f2 harea ha2a1 ha2 hf2 hf1.
@@ -203,18 +202,19 @@ Qed.
 Lemma P2p_e_I_map : P2p_e = [fset (P2p_e_mapfun x) | x in [fsetval y in 'I_((divn (p - 1) 2))]].
 Proof.
   rewrite /P2p_e /P2p. apply /eqP. rewrite eqEfsubset. apply /andP; split;
-    (destruct (_ `<=` _) eqn: hsubset; [by []|]; apply (introT negPf) in hsubset; apply (elimT (fsubsetPn _ _)) in hsubset;
+    (by_contradiction hsubset; apply (introT negPf) in hsubset; apply (elimT (fsubsetPn _ _)) in hsubset;
     destruct hsubset as [[[a1 f1] [a2 f2]] hin hnin]; apply (elimT negPf) in hnin; rewrite -hnin; clear hnin).
-  - rewrite !inE /= in hin. unfold P2p_e_mapfun. destruct_boolhyp hin. 
+  - rewrite !inE /= in hin. unfold P2p_e_mapfun. destruct_boolhyp hin.
     move => hf1f2 harea ha2a1 ha2 hf2 hf1.
     rewrite (eqnP hf1f2) /Y_area /= in harea. rewrite (eqnP hf1f2). clear hf1f2 hf1 f1.
-    have hf2_1 : f2 = 1. have heq : (a1 * f2 + a2 * f2 = f2 * (a1 + a2)) by ring.
-      rewrite heq in harea; clear heq. apply (n_dvdn) in harea.
+    have hf2_1 : f2 = 1. 
+      replace (a1 * f2 + a2 * f2) with (f2 * (a1 + a2)) in harea; [|by ring].
+      apply (n_dvdn) in harea.
       apply (elimT primeP) in p_prime. destruct p_prime as [_ hprime]. apply hprime in harea.
       apply in_Ip in hf2. rewrite ltn_neqAle in hf2. destruct_boolhyp hf2; move => hleq.
       rewrite (negPf hf2) Bool.orb_false_r /= in harea. by apply (elimT eqnP) in harea.
     rewrite hf2_1. rewrite hf2_1 muln1 muln1 in harea.
-    have ha2_0 : 0 < a2. destruct (0 < a2) eqn: ha2_0; [by []|]. apply (introT negPf) in ha2_0.
+    have ha2_0 : 0 < a2. by_contradiction ha2_0. apply (introT negPf) in ha2_0.
       rewrite -eqn0Ngt in ha2_0. rewrite (eqnP ha2_0) addn0 in harea. rewrite (eqnP harea) in hin.
       apply in_Ip in hin. by rewrite ltnn in hin.
     apply /imfsetP. exists (a2 - 1).
@@ -275,15 +275,6 @@ Proof.
   - apply (introT negPf) in hsubset. by apply (elimT (fsubsetPn _ _)) in hsubset.
 Qed.
 
-Ltac P2p_partition_tac := by repeat (match goal with
-| [H1 : context [?X], H2 : context [~~ ?X] |- _] => apply (elimT negP) in H2
-| [H1 : ?X = _, H2 : context [if ?X then _ else _] |- _] => rewrite H1 /= in H2
-| [H1 : is_true _ |- _] => unfold is_true in H1
-| [H1 : context [negb _] |- _] => unfold negb in H1
-| [H : context [_ == _] |- _] => apply (elimT eqnP) in H; subst
-| [H : context [?X < ?X] |- _] => rewrite ltnn in H
-end; auto).
-
 Lemma P2p_partition: #|`P2p|=#|`P2p_l|+#|`P2p_e|+#|`P2p_g|.
 Proof.
   have hunion : P2p = P2p_l `|` P2p_e `|` P2p_g.
@@ -291,18 +282,16 @@ Proof.
     + apply subset_by_in. move => [[[a1 f1] [a2 f2]] hin hnin]. rewrite !inE /= in hin.
       rewrite !in_fsetU !Bool.negb_orb !inE !Bool.negb_andb /= in hnin.
       destruct_boolhyp hin. move => harea ha2a1 ha2 hf2 hf1.
-      destruct_boolhyp hnin; move => hx1 hx2; try P2p_partition_tac.
-      rewrite -leqNgt leq_eqVlt in hx1. destruct_boolhyp hx1; P2p_partition_tac.
+      destruct_boolhyp hnin; try mccontradiction; move => hx1 hx2.
+      rewrite -leqNgt leq_eqVlt in hx1. destruct_boolhyp hx1; mccontradiction.
     + apply subset_by_in. move => [[[a1 f1] [a2 f2]] hin hnin].
       rewrite !inE !Bool.negb_andb /= in hnin. rewrite !in_fsetU !inE /= in hin.
       destruct_boolhyp hin; move => hf1f2 harea ha2a1 ha2 hf2 hf1; 
-      destruct_boolhyp hnin; P2p_partition_tac.
+      destruct_boolhyp hnin; mccontradiction.
   rewrite hunion. clear hunion. apply card_disjoint_triple;
     apply (elimT eqP); rewrite fsetI_eq0; apply /fdisjointP; move => [[a1 f1] [a2 f2]] hin;
     rewrite !inE /Y_area /= in hin; rewrite !inE /Y_area /=; apply (introT negP); move => hnin;
-    destruct_boolhyp hin; destruct_boolhyp hnin; intros; try P2p_partition_tac.
-  - rewrite ltnNge in hnin0. rewrite ltnNge in hin0. apply negbTE in hnin0, hin0.
-    have hleq := (leq_total f1 f2). by rewrite hnin0 hin0 /= in hleq.
+    destruct_boolhyp hin; destruct_boolhyp hnin; intros; try mccontradiction.
 Qed.
 
 Lemma P2p_g_odd : (modn p 4  = 1) -> odd #|` P2p_g |.

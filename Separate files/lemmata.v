@@ -61,15 +61,62 @@ Ltac zag_solve := repeat match goal with
 | [H : (_, _) = (_,_) |- _] => inversion H; clear H
 end; try mcnia.
 
+Ltac mcsimpl := repeat match goal with
+| [H : context [_ == _] |- _] => apply (elimT eqnP) in H || apply (elimT eqP) in H
+end.
 
 Ltac hyp_progress H := match (type of H) with
 | ?X -> ?Y => let Hold := fresh H "old" in rename H into Hold; assert (H : Y); [apply Hold; auto| clear Hold]
 end.
 
-Ltac destruct_boolhyp H := try (apply (elimT eqP) in H); (apply (elimT andP) in H; 
+Ltac destruct_boolhyp H := repeat (rewrite -Bool.orb_andb_distrib_r in H || rewrite -Bool.orb_andb_distrib_l in H); try (apply (elimT eqP) in H); (apply (elimT andP) in H; 
 let H' := fresh H in destruct H as [H H']; try destruct_boolhyp H; try destruct_boolhyp H'; generalize dependent H')
 || (apply (elimT orP) in H; destruct H as [H | H]; try destruct_boolhyp H).
 Ltac reflect_booleq H := apply (elimT eqP) in H.
+
+Ltac is_assertion H X := match (type of H) with
+| is_true (X) => rewrite /is_true
+| X = true => idtac
+| ~~ X = false => apply (introT negPf) in H; apply (elimT negPn) in H; is_assertion H X
+| true = X => symmetry in H
+| false = ~~ X => symmetry in H; is_assertion H X
+end.
+
+Ltac is_negation H X := match (type of H) with
+| is_true (~~ X) => apply (elimT negPf) in H
+| X = false => idtac
+| ~~ X = true => apply (elimT negPf) in H
+| false = X => symmetry in H
+| true = ~~ X => symmetry in H; apply (elimT negPf) in H
+end.
+
+Lemma ltn_asymmetric : forall n m, (n < m) && (m < n) = false.
+Proof.
+  move => n m.
+  destruct (n < m) eqn: hnm; destruct (m < n) eqn: hmn; try by auto.
+  rewrite ltnNge leq_eqVlt negb_or in hnm. destruct_boolhyp hnm. move => hnm'.
+  by rewrite hmn in hnm'.
+Qed.
+
+Ltac mccontradiction := by match goal with
+| [H : context [?X], H' : context [?X] |- _] => is_assertion H X; is_negation H' X; rewrite H in H'
+| [H : context [?X < ?X] |- _] => by rewrite ltnn in H
+| [H : context [?X == ?Y], H' : context [?Y != ?X] |- _] => is_assertion H (X == Y); is_negation H' (Y != X); rewrite eq_sym in H; rewrite H in H'
+| [H : context [?X == ?Y], H' : context [?Y < ?X] |- _] => apply (elimT eqP) in H; rewrite H ltnn in H'
+| [H : context [?X == ?Y], H' : context [?X < ?Y] |- _] => apply (elimT eqP) in H; rewrite H ltnn in H'
+| [H : context [?X < ?Y], H' : context [?Y < ?X] |- _] => let hfalse := fresh in have hfalse : false by rewrite -(ltn_asymmetric X Y) H H' /=
+end.
+
+
+Ltac by_contradiction H := match goal with
+| [|- is_true (~~ ?X)] => destruct (X) eqn:H; [|by auto]
+| [|- is_true ?X] => destruct (X) eqn:H; [by auto|]
+| [|- (~~ ?X) = true] => destruct (X) eqn:H; [|by auto]
+| [|- ?X = true] => destruct (X) eqn:H; [by auto|]
+| [|- ?X = false] => destruct (X) eqn:H; [|by auto]
+end; try mccontradiction.
+
+Ltac by_contra := let H := fresh in by_contradiction H.
 
 Open Scope order_scope.
 Theorem strong_induction (p : nat -> Prop) :

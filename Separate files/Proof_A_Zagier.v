@@ -22,9 +22,9 @@ Variable p:nat.
 Variable p_prime : prime p.
 
 Definition N3 : Type := nat * nat * nat.
-Definition involutionN3:= (involution_on [choiceType of N3]).
-Definition fixed_fsetN3:=(fixed_fset [choiceType of N3]).
-Definition InvolutionN3_lemma:=(Involution_lemma [choiceType of N3]).
+Definition involutionN3:= (@involution_on [choiceType of N3]).
+Definition fixed_fsetN3:=(@fixed_fset [choiceType of N3]).
+Definition InvolutionN3_lemma:=(@Involution_lemma [choiceType of N3]).
 Definition Ipfset:{fset nat} := [fsetval n in 'I_p].
 Definition Ipf3:{fset N3} := (Ipfset`*`Ipfset`*`Ipfset).
 Definition area (t:N3) :nat := (t.1.1)^2+4*(t.1.2)*(t.2).
@@ -41,11 +41,11 @@ Definition zag (t:N3) :N3 := match t with (x,y,z) =>
 Lemma modulo_ex: ((modn p 4) = 1) -> (exists k, p=k*4+1).
 Proof. by move => h_pmod4; exists (p%/4); rewrite{1} (divn_eq p 4) h_pmod4. Qed.
 
-Lemma in_Ipfset (n : nat) : (n \in Ipfset) <-> (n<p).
+(*Lemma in_Ipfset (n : nat) : (n \in Ipfset) <-> (n<p).
 Proof.
 split; first by rewrite /Ipfset => /imfsetP /= [x _ ->].
 by move => hnp; apply/imfsetP; exists (Sub n hnp).
-Qed.
+Qed.*)
 
 Lemma square_eq : forall n : nat, n * n == n -> (n == 1) || (n == 0).
 Proof.
@@ -121,43 +121,48 @@ Qed.
 Lemma zig_involution: involutionN3 S zig.
 Proof.
 rewrite /involution_on; split.
- - move => t; rewrite !inE /zig /= => htS; destruct_boolhyp htS; move => hp hz hy.
-   by repeat (apply /andP; split => //=); rewrite (eqP hp) /area /=; mcnia.
+ - move => t; rewrite !inE /zig /= => htS; destruct_boolhyp htS => hx hy hz hp.
+   by repeat (apply /andP; split => //=) ; rewrite (eqP hp) /area /=; mcnia.
  - by move => [[a b] c] hxs; rewrite /zig.
 Qed.
 
 Lemma zig_solution (t:N3):
-  (t \in fixed_fset [choiceType of N3] S zig)->(exists a b: nat, p=a^2+b^2).
+  (t \in fixed_fset S zig)->(exists a b: nat, p=a^2+b^2).
 Proof.
-rewrite !inE /area /zig => htfix; destruct_boolhyp htfix; move => ht hp hz hy.
-have heqt:t.2=t.1.2 by move/eqP: ht =>  {1}-> .
-rewrite -heqt in ht; exists t.1.1; exists (2*(t.2)).
-rewrite (eqP hp). mcnia.
+rewrite !inE /area /zig => htfix; destruct_boolhyp htfix => hx hy hz hp _ ht _.
+rewrite /= in ht.
+exists t.1.1; exists (2*(t.2)).
+mcnia.
 Qed.
 
 (* Study of the zag involution                                                *)
 
 Lemma zag_involution: involutionN3 S zag.
 Proof.
-rewrite /involution_on; split.
- - move => t; rewrite !inE => /andP [hIp /eqP har]; apply/andP.
-   have hzagar: p = area (zag t) by rewrite har /area /zag; zag_solve.
-   split; last by rewrite hzagar. move/bound_Sp: hzagar => [h1 [h2 h3]] /=.
-   apply/andP; split; first by apply/andP; split; apply/in_Ipfset. by apply/in_Ipfset.
- - move => [[ /=x y] /= z]; rewrite !inE => htS; destruct_boolhyp htS; move => /eqP hp hz hy.
-   have [hx0 [hy0 hz0]] := area_p x y z hp. by rewrite /zag; zag_solve.
+rewrite /involution_on; split; move => [[x y] z].
+ - rewrite !inE => hin; destruct_boolhyp hin => hx hy hz hp.
+   have hzagar: p = area (zag (x,y,z)). rewrite (eqP hp) /area /zag; zag_solve.
+   rewrite /= in hx, hy, hz; rewrite /area /=.
+   rewrite /area /zag /= in hzagar, hp.
+   apply in_Imfset in hx, hy, hz; simpl in *.
+   have [hx0 [hy0 hz0]] := area_p x y z (eqP hp).
+   zag_solve.
+ - rewrite !inE => htS; destruct_boolhyp htS; move => hx hy hz hp.
+   apply in_Imfset in hx, hy, hz. simpl in *.
+   have [hx0 [hy0 hz0]] := area_p x y z (eqP hp).
+   rewrite /zag; zag_solve.
 Qed.
 
 Lemma zag_fixed_point (k:nat): (p = k*4+1) -> (fixed_fsetN3 S zag)=[fset (1,1,k)].
 Proof.
 move => h_pmod4; apply/eqP; rewrite eqEfsubset; apply/andP; split.
- - apply/fsubsetP => t. rewrite !inE. move: t=>[[x y] z].
-   move => /andP [/andP [_ /eqP har] /eqP hzagt]. apply /eqP.
-   + have hx1:(x = 1). move: hzagt. rewrite /zag. move => Heq /=.
-     by apply (area_p_xy _ _ _ har); generalize Heq; zag_solve.
-   + have hy1:(y = 1). move: hzagt. rewrite /zag. move => Heq /=.
-     by apply (area_p_xy _ _ _ har); generalize Heq; zag_solve.
-   + rewrite /area in har. by zag_solve.
+ - apply/fsubsetP => t; move: t=>[[x y] z] /=.
+   rewrite !inE /zag /=.
+   move => hp; destruct_boolhyp hp => /= hx hy hz hp hxe.
+   have [hx0 [hy0 hz0]] := area_p x y z (eqP hp).
+   have hxy := (area_p_xy _ _ _ (eqP hp)); hyp_progress hxy; generalize dependent hxe; zag_solve.
+   rewrite /area in hp; simpl in *.
+   zag_solve.
  - apply/fsubsetP => x; rewrite !inE => /eqP -> /=.
    have harea : p=area (1,1,k) by rewrite/area h_pmod4 /=; ring.
    have [/= hbx [_ hbz]] := bound_Sp (1,1,k) harea.

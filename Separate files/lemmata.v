@@ -145,7 +145,7 @@ Ltac by_arg_eq := match goal with
 end. 
 
 Ltac mcsolve :=
-mcsimpl; try subst; (
+(mcsimpl; try subst; (
 (by auto) ||
 (mcnia) ||
 (match goal with 
@@ -156,7 +156,7 @@ end) ||
 (repeat (match goal with
 | [H : context [_ && _] |- _] => destruct_boolhyp H; intros
 | [H : context [_ || _] |- _] => destruct_boolhyp H; intros
-end); by (auto || mcnia))) ||
+end); by (auto || mcnia)))) ||
 mccontradiction.
 
 Ltac zag_solve := (repeat match goal with
@@ -172,6 +172,8 @@ Ltac zag_solve := (repeat match goal with
 | [H : _ /\ _ |- _] => let H' := fresh H in destruct H as [H H']
 | [H : context [_ && _] |- _] => destruct_boolhyp H
 | [H : context [_ || _] |- _] => destruct_boolhyp H
+| [H : context [_ \/ _] |- _] => apply (introT orP) in H; destruct_boolhyp H
+| [H : context [_ /\ _] |- _] => apply (introT andP) in H; destruct_boolhyp H
 end); repeat rewrite -> in_Imfset_eq; try mcsolve.
 
 Open Scope order_scope.

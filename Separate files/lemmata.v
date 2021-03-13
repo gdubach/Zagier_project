@@ -28,8 +28,22 @@ Proof.
 by apply in_Imfset.
 Qed.
 
+Lemma in_Imfset_eq {n m : nat} : (n \in [fsetval x in 'I_m]) = leq (S n) m.
+Proof.
+destruct (_ < _) eqn: hlt.
+- by apply in_Imfset in hlt.
+- destruct (_ \in _) eqn: hin.
+  + apply in_Imfset in hin.
+    by rewrite hin in hlt.
+  + by [].
+Qed.
 
-Ltac mctocoq := intros; repeat match goal with
+Ltac mcsimpl := repeat match goal with
+| [H : context [_ == _] |- _] => apply (elimT eqnP) in H || apply (elimT eqP) in H
+| [H: context [Imfset.imfset _ _ _] |- _] => rewrite !in_Imfset_eq in H
+end.
+
+Ltac mctocoq := intros; mcsimpl; try rewrite !in_Imfset_eq; repeat match goal with
 | [|- ?X * ?Y <= ?Z * ?W] => apply leq_mul; ((apply ltnW; assumption) || mctocoq; try reflexivity; nia)
 | [H : context [_ = false] |- _] => apply (introT negPf) in H
 | [H : context [~~ (leq (S _) _)] |- _] => rewrite -leqNgt in H; apply (Bool.reflect_iff _ _ ssrnat.leP) in H; simpl
@@ -67,10 +81,6 @@ Proof. mcnia. Qed.
 
 Lemma pair_eq {S T : Type} (s s' : S) (t t' : T) : s = s' -> t = t' -> (s,t) = (s',t').
 Proof.  intros Heqs Heqt; subst; reflexivity. Qed.
-
-Ltac mcsimpl := repeat match goal with
-| [H : context [_ == _] |- _] => apply (elimT eqnP) in H || apply (elimT eqP) in H
-end.
 
 Ltac hyp_progress H := match (type of H) with
 | ?X -> ?Y => let Hold := fresh H "old" in rename H into Hold; assert (H : Y); [apply Hold; auto| clear Hold]
@@ -162,7 +172,7 @@ Ltac zag_solve := (repeat match goal with
 | [H : _ /\ _ |- _] => let H' := fresh H in destruct H as [H H']
 | [H : context [_ && _] |- _] => destruct_boolhyp H
 | [H : context [_ || _] |- _] => destruct_boolhyp H
-end); try apply in_Imfset_r; try mcsolve.
+end); repeat rewrite -> in_Imfset_eq; try mcsolve.
 
 Open Scope order_scope.
 Theorem strong_induction (p : nat -> Prop) :

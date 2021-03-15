@@ -208,11 +208,19 @@ have p_prime' := p_prime.
 apply (elimT primeP) in p_prime'.
 move: p_prime' => [hp1 hprime].
 apply /eqP.
+(* unfold definitions and assert set equality by mutual subset relationship *)
 rewrite /P2p_e /P2p /P2p_e_mapfun eqEfsubset.
+(* both subset relationships hold because there exists no element in
+   the subset that does not exist in the superset.
+   both proofs eventually rely on the fact that p > 2, and therefore
+   p - 1 must be even. *)
 apply /andP; split; 
   apply subset_by_in; 
   move => [[[a1 f1] [a2 f2]] hin hnin];
   apply (elimT negP) in hnin; apply hnin; clear hnin.
+  (* the first case is the easier one; the hard part is
+     to prove that (a2 - 1) < floor((p - 1)/2).
+     First, however, we collect some facts and prove that f1 = f2 = 1*)
 - rewrite !inE /Ip /= in hin.
   destruct_boolhyp hin => /= ha1 hf1 ha2 hf2 harea ha2a1 hf1f2.
   have hgt0 := (@area_gt0_all ((a1,f1),(a2,f2)) _ harea).
@@ -229,8 +237,13 @@ apply /andP; split;
   rewrite hf2_1.
   rewrite hf2_1 !muln1 in harea.
   clear hf2_1 hf2 hf2_0 f2.
+  (* Now it is easy to see that the way to instantiate
+     x to satisfy the membership goal is by (a2 - 1), which means we
+     need to prove that (a2 - 1) < (p - 1) % 2 *)
   apply /imfsetP; exists (a2 - 1); [|zag_solve].
   apply/imfsetP; unshelve (eexists (Sub (a2 - 1) _)).
+  (* the following fact (relying on the knowledge that p-1 is even) 
+     helps mcnia figure out that the inequation holds *)
   + have hp : p - 1 = 2 * ((p - 1) %/ 2).
     - have hpgt2 : p > 2 by mcnia.
       apply (elimT eqP).
@@ -240,6 +253,13 @@ apply /andP; split;
     mcnia.
   + zag_solve.
   + zag_solve.
+  (* the second part is the more complicated one; it again
+     relies on the fact that p > 2 and therefore odd.
+     This in turn means that we can prove the inequality
+     2 * (x + 1) < p by weakening the inequality to <=
+     and proving that the equal-case cannot hold as the LHS
+     is even, but p is odd.
+     *)
 - rewrite !inE /=.
   apply (elimT (imfsetP _ _ _ _)) in hin.
   move: hin => [x hin heq].
@@ -256,12 +276,16 @@ apply /andP; split;
       destruct p_prime as [hp|hp]; try rewrite hp; zag_solve.
     rewrite ltn_subRL.
     replace (2 + 2 * x) with (2 * (x + 1)); [|by mclia].
+    (* now turn < into != && <= *)
     rewrite ltn_neqAle.
     apply /andP; split.
+    (* != holds because even != odd *)
     - by_contradiction hcontra.
       rewrite dvdn2 -oddS subn1 -Lt.S_pred_pos -(eqP hcontra) in pdiv2; [|by mclia].
       by rewrite oddM /= in pdiv2.
+    (* <= holds by hin and p-1's evenness *)
     - rewrite ltn_divRL in hin; zag_solve.
+  (* the fact that 2 * x < (p - 2) suffices to solve the rest *)
   rewrite /Y_area; zag_solve.
 Qed.
 

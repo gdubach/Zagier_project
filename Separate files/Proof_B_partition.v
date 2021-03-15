@@ -10,7 +10,6 @@
 From mathcomp Require Import all_ssreflect ssrbool ssrnat eqtype ssrfun seq.
 From mathcomp Require Import choice path finset finfun fintype bigop finmap.
 Require Import lemmata.
-
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -27,10 +26,7 @@ Definition N4 : Type := (nat * nat) * (nat * nat).
 Definition Ip4:{fset N4} := ((Ip`*`Ip)`*`(Ip`*`Ip)).
 Definition involutionN4:= (@involution_on [choiceType of N4]).
 Definition fixed_fsetN4:=(@fixed_fset [choiceType of N4]).
-Definition InvolutionN4_lemma:=(@Involution_lemma [choiceType of N4]).
-
-Hint Unfold Ip.
-Hint Transparent Ip.
+Definition involutionN4_lemma:=(@involution_lemma [choiceType of N4]).
 
 (* Y_area is the area of a Young diagram                                      *)
 Definition Y_area (yd : N4) : nat := yd.1.1*yd.1.2+yd.2.1*yd.2.2.
@@ -40,16 +36,7 @@ Definition P2p :=[fset yd:N4 | (yd \in Ip4) && ((Y_area yd ==p)&&(yd.1.1>yd.2.1)
   Definition P2p_e :=[fset yd:N4 | (yd \in P2p) && (yd.1.2==yd.2.2)].
   Definition P2p_g :=[fset yd:N4 | (yd \in P2p) && (yd.1.2>yd.2.2)].
 
-Hint Unfold Y_area.
-Hint Transparent Y_area.
-
 (* Basic properties                                                           *)
-
-(*Lemma in_Ip (n : nat) : (n \in Ip) <-> (n<p).
-Proof.
-split; first by rewrite /Ip => /imfsetP /= [x _ ->].
-by move => hnp; apply/imfsetP; exists (Sub n hnp).
-Qed.*)
 
 Lemma modulo_ex: ((modn p 4) = 1) -> (exists k, p=k*4+1).
 Proof.
@@ -137,7 +124,7 @@ Qed.
 
 Lemma P2p_odd :  (modn p 4  = 1) -> odd(#|`P2p|).
 Proof.
-rewrite -(@InvolutionN4_lemma conjugate P2p conjugate_involution).
+rewrite -(@involutionN4_lemma conjugate P2p conjugate_involution).
 move => hp4.
 by rewrite conjugate_fixed.
 Qed.
@@ -183,7 +170,7 @@ Qed.
 
 Theorem P2p_l_even : ~~odd(#|`P2p_l|).
 Proof.
-rewrite -(@InvolutionN4_lemma transpose_l P2p_l transpose_l_involution).
+rewrite -(@involutionN4_lemma transpose_l P2p_l transpose_l_involution).
 by rewrite transpose_l_fixed.
 Qed.
 
@@ -383,12 +370,12 @@ Qed.
 (* Proof of Fermat's theorem using partitions, following David Christopher    *)
 (*                                                                            *)
 
-Theorem Fermat_David_Christopher : (modn p 4 = 1) -> (exists a b :nat, p=a^2 + b^2).
+Theorem Fermat_David_Christopher : p %% 4 = 1 -> exists a b :nat, p=a^2 + b^2.
 Proof.
 move => hk.
 apply transpose_g_fixed.
 apply odd_existence. 
-rewrite Involution_lemma.
+rewrite involution_lemma.
 - by apply P2p_g_odd.
 - by apply transpose_g_involution.
 Qed.

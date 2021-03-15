@@ -11,7 +11,7 @@ From mathcomp Require Import all_ssreflect ssrbool ssrnat eqtype ssrfun seq.
 From mathcomp Require Import choice path finset finfun fintype bigop finmap.
 From mathcomp Require Import ssralg order.
 Require Import lemmata.
-Set Implicit Argument.
+Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
@@ -24,7 +24,7 @@ Variable p_prime : prime p.
 Definition N3 : Type := nat * nat * nat.
 Definition involutionN3:= (@involution_on [choiceType of N3]).
 Definition fixed_fsetN3:=(@fixed_fset [choiceType of N3]).
-Definition InvolutionN3_lemma:=(@Involution_lemma [choiceType of N3]).
+Definition involutionN3_lemma:=(@involution_lemma [choiceType of N3]).
 Definition Ipfset:{fset nat} := [fsetval n in 'I_p].
 Definition Ipf3:{fset N3} := (Ipfset`*`Ipfset`*`Ipfset).
 Definition area (t:N3) :nat := (t.1.1)^2+4*(t.1.2)*(t.2).
@@ -35,24 +35,12 @@ Definition zag (t:N3) :N3 := match t with (x,y,z) =>
     else if (2*y) >= x then (2*y-x,y,z+x-y)
          else (x-2*y,z+x-y,y) end.
 
-Hint Unfold Ipfset.
-Hint Unfold area.
-Hint Unfold zig.
-Hint Unfold zag.
-Hint Transparent Ipfset.
-
 (*  Basic properties                                                          *)
 
 Lemma modulo_ex: ((modn p 4) = 1) -> (exists k, p=k*4+1).
 Proof.
 by move => h_pmod4; exists (p%/4); rewrite{1} (divn_eq p 4) h_pmod4.
 Qed.
-
-(*Lemma in_Ipfset (n : nat) : (n \in Ipfset) <-> (n<p).
-Proof.
-split; first by rewrite /Ipfset => /imfsetP /= [x _ ->].
-by move => hnp; apply/imfsetP; exists (Sub n hnp).
-Qed.*)
 
 Lemma square_eq : forall n : nat, n * n == n -> (n == 1) || (n == 0).
 Proof.
@@ -103,7 +91,7 @@ Qed.
 
 Lemma area_p_xy (x y z : nat) : p = area (x,y,z) -> x = y -> x = 1 /\ y = 1.
 Proof.
-rewrite /area /= => har heq; have [Hx [Hy Hz]]:=(area_p _ _ _ har).
+rewrite /area /= => har heq. have [Hx [Hy Hz]]:=(@area_p _ _ _ har).
 have hxnp:x<>p.
 - move=> hxep; rewrite hxep in har.
   have Hbad: p ^ 2 + 4 * y * z > p by mcnia.
@@ -121,7 +109,7 @@ Qed.
 Lemma bound_Sp: forall (t:N3), p = area t ->  t.1.1<p /\ t.1.2<p /\ t.2<p.
 Proof.
 move => [[x y] z] ; rewrite /area /= => Harea.
-have [/= Hxn0 [Hyn0 Hzn0]] := area_p _ _ _ Harea.
+have [/= Hxn0 [Hyn0 Hzn0]] := @area_p _ _ _ Harea.
 split; [|split]; by_contradiction hcontra => //=;
   rewrite Harea in hcontra; rewrite -hcontra; mcnia.
 Qed.
@@ -152,10 +140,10 @@ rewrite /involution_on; split; move => [[x y] z].
    destruct_boolhyp hin => hx hy hz hp.
    have hzagar: p = area (zag (x,y,z)) by rewrite (eqP hp) /area /zag; zag_solve.
    rewrite /area /zag /= in hzagar.
-   have [hx0 [hy0 hz0]] := area_p x y z (eqP hp).
+   have [hx0 [hy0 hz0]] := @area_p x y z (eqP hp).
    zag_solve.
  - rewrite !inE => htS; destruct_boolhyp htS; move => hx hy hz hp.
-   have [hx0 [hy0 hz0]] := area_p x y z (eqP hp).
+   have [hx0 [hy0 hz0]] := @area_p x y z (eqP hp).
    rewrite /zag; zag_solve.
 Qed.
 
@@ -165,13 +153,13 @@ move => h_pmod4; apply/eqP; rewrite eqEfsubset; apply/andP; split.
  - apply/fsubsetP => t; move: t=>[[x y] z] /=.
    rewrite !inE /zag /=.
    move => hp; destruct_boolhyp hp => /= hx hy hz hp hxe.
-   have [hx0 [hy0 hz0]] := area_p x y z (eqP hp).
-   have hxy := (area_p_xy _ _ _ (eqP hp)); hyp_progress hxy; generalize dependent hxe; zag_solve.
+   have [hx0 [hy0 hz0]] := @area_p x y z (eqP hp).
+   have hxy := (@area_p_xy _ _ _ (eqP hp)); hyp_progress hxy; generalize dependent hxe; zag_solve.
    rewrite /area in hp; simpl in *.
    zag_solve.
  - apply/fsubsetP => x; rewrite !inE => /eqP -> /=.
-   have harea : p=area (1,1,k) by rewrite/area h_pmod4 /=; ring.
-   have [/= hbx [_ hbz]] := bound_Sp (1,1,k) harea.
+   have harea : p=@area (1,1,k) by rewrite/area h_pmod4 /=; ring.
+   have [/= hbx [_ hbz]] := @bound_Sp (1,1,k) harea.
    repeat (apply/andP; split); try apply/in_Ipfset; zag_solve => //=.
 Qed.
 
@@ -180,23 +168,23 @@ Qed.
 (*  (Zagier's 'one-sentence' is given as comments)                            *)
 (*                                                                            *)
 
-Theorem Fermat_Zagier : (modn p 4 = 1) -> (exists a b :nat, p=a^2 + b^2).
+Theorem Fermat_Zagier : p %% 4 = 1 -> exists a b :nat, p=a^2 + b^2.
 Proof.
 move /modulo_ex => [k hk].
 (* 'The involution on the finite set [S] defined by [zag]'                    *)
 have h_zag_invol:=zag_involution.
 (* 'has exactly one fixed point,'                                             *)
 have h_zag_fix_card:(#|`(fixed_fsetN3 S zag)|) = 1.
-   - by rewrite (zag_fixed_point k); first by apply: cardfs1; exact hk.
+   - by rewrite (@zag_fixed_point k); first by apply: cardfs1; exact hk.
 (* 'so |S| is odd,'                                                           *)
 have h_S_odd: odd(#|`S|).
-   by rewrite -(InvolutionN3_lemma zag S h_zag_invol) h_zag_fix_card.
+   by rewrite -(@involutionN3_lemma zag S h_zag_invol) h_zag_fix_card.
 (* 'and the involution defined by [zig].'                                     *)
 have h_zig_invol:= zig_involution.
 (* 'also has a fixed point.'                                                  *)
 have [t htzigfix]: exists t:N3, t \in (fixed_fsetN3 S zig).
-  by apply odd_existence; rewrite (InvolutionN3_lemma zig S h_zig_invol).
-by apply (zig_solution t).
+  by apply odd_existence; rewrite (@involutionN3_lemma zig S h_zig_invol).
+by apply (@zig_solution t).
 Qed.
 
 End Zagier_Proof.

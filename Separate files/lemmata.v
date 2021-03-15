@@ -23,11 +23,6 @@ split; first by move => /imfsetP /= [x _ ->].
 by move => hnp; apply/imfsetP; exists (Sub n hnp).
 Qed.
 
-Lemma in_Imfset_r (n m : nat) : (leq (S n) m) -> (n \in [fsetval x in 'I_m]).
-Proof.
-by apply in_Imfset.
-Qed.
-
 Lemma in_Imfset_eq {n m : nat} : (n \in [fsetval x in 'I_m]) = leq (S n) m.
 Proof.
 destruct (_ < _) eqn: hlt.
@@ -44,10 +39,13 @@ Ltac mcsimpl := repeat match goal with
 end.
 
 Ltac mctocoq := intros; mcsimpl; try rewrite !in_Imfset_eq; repeat match goal with
-| [|- ?X * ?Y <= ?Z * ?W] => apply leq_mul; ((apply ltnW; assumption) || mctocoq; try reflexivity; nia)
+| [|- ?X * ?Y <= ?Z * ?W] => apply leq_mul; ((apply ltnW; assumption) 
+                             || mctocoq; try reflexivity; nia)
 | [H : context [_ = false] |- _] => apply (introT negPf) in H
-| [H : context [~~ (leq (S _) _)] |- _] => rewrite -leqNgt in H; apply (Bool.reflect_iff _ _ ssrnat.leP) in H; simpl
-| [H : context [~~ (leq _ _)] |- _] => rewrite -ltnNge in H; apply (Bool.reflect_iff _ _ ssrnat.leP) in H; simpl
+| [H : context [~~ (leq (S _) _)] |- _] => rewrite -leqNgt in H; 
+                             apply (Bool.reflect_iff _ _ ssrnat.leP) in H; simpl
+| [H : context [~~ (leq _ _)] |- _] => rewrite -ltnNge in H; 
+                             apply (Bool.reflect_iff _ _ ssrnat.leP) in H; simpl
 | [H : context [addn] |- _] => unfold addn in H; unfold addn_rec in H; simpl in H
 | [H : context [subn] |- _] => unfold subn in H; unfold subn_rec in H; simpl in H
 | [H : context [muln] |- _] => unfold muln in H; unfold muln_rec in H; simpl in H
@@ -92,6 +90,7 @@ repeat rewrite Bool.negb_involutive in H;
 (apply (elimT andP) in H;  let H' := fresh H in destruct H as [H H']; 
   (destruct_boolhyp H' || generalize dependent H'); (destruct_boolhyp H || generalize dependent H))
 || (apply (elimT orP) in H; destruct H as [H | H]; try destruct_boolhyp H).
+
 Ltac reflect_booleq H := apply (elimT eqP) in H.
 
 Ltac is_assertion H X := match (type of H) with
@@ -128,7 +127,6 @@ Ltac mccontradiction := by (mcsimpl; try subst; contradiction) || by (try subst;
 | [H : context [?X < ?Y], H' : context [?Y < ?X] |- _] => let hfalse := fresh in have hfalse : false by rewrite -(ltn_asymmetric X Y) H H' /=
 | [H : context [?X], H' : context [?X] |- _] => is_assertion H X; is_negation H' X; rewrite H in H'
 end).
-
 
 Ltac by_contradiction H := match goal with
 | [|- is_true (~~ ?X)] => destruct (X) eqn:H; [|by auto]
@@ -197,24 +195,24 @@ Tactic Notation "strong" "induction" ident(x) := strongind x.
 
 Lemma subset_by_in {K : choiceType} (A B : {fset K}) : ~ (exists2 x : K, x \in A & x \notin B) -> A `<=` B.
 Proof.
-  move => hnot. destruct (_ `<=` _) eqn: hsubset.
-  - by [].
-  - apply (introT negPf) in hsubset. by apply (elimT (fsubsetPn _ _)) in hsubset.
+move => hnot. destruct (_ `<=` _) eqn: hsubset.
+ - by [].
+ - apply (introT negPf) in hsubset; by apply (elimT (fsubsetPn _ _)) in hsubset.
 Qed.
 
 
 Lemma n_dvdn {p n m : nat} : (n * m == p) -> (dvdn n p).
 Proof.
-  move => heq. apply (introT dvdnP). exists m. by rewrite mulnC (eqnP heq).
+move => heq. apply (introT dvdnP). exists m. by rewrite mulnC (eqnP heq).
 Qed.
 
 (* Fixed points of involutions over an {fset K}                               *)
 
-Section Involution_lemma.
+Section Involution_Lemma.
 Open Scope order_scope.
 Open Scope fset_scope.
 Open Scope nat_scope.
-Variable (K: choiceType).
+Variable K: choiceType.
 Definition involution_on (E: {fset K}) (f:K->K) :=
 (forall x, x \in E -> f x \in E) /\ (forall x, x \in E -> f (f x) = x).
 Definition fixed_fset (E: {fset K}) (f:K->K) :{fset K} := [fset x in E | x==f x].
@@ -294,7 +292,7 @@ Proof.
 by rewrite in_fsetD => h; destruct_boolhyp h.
 Qed.
 
-Lemma Involution_lemma (f:K->K): forall (E:{fset K}),
+Lemma involution_lemma (f:K->K): forall (E:{fset K}),
 (involution_on E f)-> (odd(#|`(fixed_fset E f)|)=odd(#|`E|)).
 Proof.
 (* We proceed by strong induction *)
@@ -369,4 +367,5 @@ rewrite -cardfs_gt0.
 by apply odd_gt0.
 Qed.
 
-End Involution_lemma.
+End Involution_Lemma.
+Check involution_lemma.

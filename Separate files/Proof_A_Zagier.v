@@ -91,7 +91,8 @@ Qed.
 
 Lemma area_p_xy (x y z : nat) : p = area (x,y,z) -> x = y -> x = 1 /\ y = 1.
 Proof.
-rewrite /area /= => har heq. have [Hx [Hy Hz]]:=(@area_p _ _ _ har).
+rewrite /area /= => har heq.
+have [Hx [Hy Hz]]:=(area_p har).
 have hxnp:x<>p.
 - move=> hxep; rewrite hxep in har.
   have Hbad: p ^ 2 + 4 * y * z > p by mcnia.
@@ -109,7 +110,7 @@ Qed.
 Lemma bound_Sp: forall (t:N3), p = area t ->  t.1.1<p /\ t.1.2<p /\ t.2<p.
 Proof.
 move => [[x y] z] ; rewrite /area /= => Harea.
-have [/= Hxn0 [Hyn0 Hzn0]] := @area_p _ _ _ Harea.
+have [/= Hxn0 [Hyn0 Hzn0]] := area_p Harea.
 split; [|split]; by_contradiction hcontra => //=;
   rewrite Harea in hcontra; rewrite -hcontra; mcnia.
 Qed.
@@ -137,14 +138,12 @@ Lemma zag_involution: involutionN3 S zag.
 Proof.
 rewrite /involution_on; split; move => [[x y] z].
  - rewrite !inE /area /zag /Ipfset /= /area /zag => hin.
-   destruct_boolhyp hin => hx hy hz hp.
-   have hzagar: p = area (zag (x,y,z)) by rewrite (eqP hp) /area /zag; zag_solve.
-   rewrite /area /zag /= in hzagar.
-   have [hx0 [hy0 hz0]] := @area_p x y z (eqP hp).
+   destruct_boolhyp hin => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
    zag_solve.
- - rewrite !inE => htS; destruct_boolhyp htS; move => hx hy hz hp.
-   have [hx0 [hy0 hz0]] := @area_p x y z (eqP hp).
-   rewrite /zag; zag_solve.
+ - rewrite !inE /zag => htS; destruct_boolhyp htS => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   zag_solve.
 Qed.
 
 Lemma zag_fixed_point (k:nat): (p = k*4+1) -> (fixed_fsetN3 S zag)=[fset (1,1,k)].
@@ -152,14 +151,14 @@ Proof.
 move => h_pmod4; apply/eqP; rewrite eqEfsubset; apply/andP; split.
  - apply/fsubsetP => t; move: t=>[[x y] z] /=.
    rewrite !inE /zag /=.
-   move => hp; destruct_boolhyp hp => /= hx hy hz hp hxe.
-   have [hx0 [hy0 hz0]] := @area_p x y z (eqP hp).
-   have hxy := (@area_p_xy _ _ _ (eqP hp)); hyp_progress hxy; generalize dependent hxe; zag_solve.
+   move => hp; destruct_boolhyp hp => /= hx hy hz /eqP hp hxe.
+   have [hx0 [hy0 hz0]] := area_p hp.
+   have hxy := (area_p_xy hp); hyp_progress hxy; generalize dependent hxe; zag_solve.
    rewrite /area in hp; simpl in *.
    zag_solve.
  - apply/fsubsetP => x; rewrite !inE => /eqP -> /=.
-   have harea : p=@area (1,1,k) by rewrite/area h_pmod4 /=; ring.
-   have [/= hbx [_ hbz]] := @bound_Sp (1,1,k) harea.
+   have harea : p=area (1,1,k) by rewrite/area h_pmod4 /=; ring.
+   have [/= hbx [_ hbz]] := bound_Sp harea.
    repeat (apply/andP; split); try apply/in_Ipfset; zag_solve => //=.
 Qed.
 
@@ -175,16 +174,16 @@ move /modulo_ex => [k hk].
 have h_zag_invol:=zag_involution.
 (* 'has exactly one fixed point,'                                             *)
 have h_zag_fix_card:(#|`(fixed_fsetN3 S zag)|) = 1.
-   - by rewrite (@zag_fixed_point k); first by apply: cardfs1; exact hk.
+   - by rewrite (zag_fixed_point hk); first by apply: cardfs1.
 (* 'so |S| is odd,'                                                           *)
 have h_S_odd: odd(#|`S|).
-   by rewrite -(@involutionN3_lemma zag S h_zag_invol) h_zag_fix_card.
+   by rewrite -(involutionN3_lemma h_zag_invol) h_zag_fix_card.
 (* 'and the involution defined by [zig].'                                     *)
 have h_zig_invol:= zig_involution.
 (* 'also has a fixed point.'                                                  *)
 have [t htzigfix]: exists t:N3, t \in (fixed_fsetN3 S zig).
-  by apply odd_existence; rewrite (@involutionN3_lemma zig S h_zig_invol).
-by apply (@zig_solution t).
+  by apply odd_existence; rewrite (involutionN3_lemma h_zig_invol).
+by apply (zig_solution htzigfix).
 Qed.
 
 End Zagier_Proof.

@@ -38,7 +38,7 @@ Definition P2p :=[fset yd:N4 | (yd \in Ip4) && ((Y_area yd ==p)&&(yd.1.1>yd.2.1)
 
 (* Basic properties                                                           *)
 
-Lemma modulo_ex: ((modn p 4) = 1) -> (exists k, p=k*4+1).
+Lemma modulo_ex: p %% 4 = 1 -> exists k, p=k*4+1.
 Proof.
 by move => h_pmod4; exists (p%/4); rewrite{1} (divn_eq p 4) h_pmod4.
 Qed.

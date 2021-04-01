@@ -1,21 +1,19 @@
-(*  File 2/3 of the proofs of Fermat's Two Squares Theorem                    *)
+(*  Additional file of Zagier project                                         *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (*  This proof is from:                                                       *)
-(*  D. Zagier, A One-Sentence Proof That Every Prime p $\equiv$ 1 (mod 4)     *)
-(*  is a Sum of Two Squares,                                                  *)
-(*                The American Mathematical Monthly 97 (1990), no.2, 144-144. *)
+(* Elsholtz*)
 (*                                                                            *)
 
-From mathcomp Require Import all_ssreflect ssrbool ssrnat eqtype ssrfun seq.
-From mathcomp Require Import choice path finset finfun fintype bigop finmap.
-From mathcomp Require Import ssralg order.
+From mathcomp Require Import all_ssreflect.
+From mathcomp Require Import finmap.
+(* From mathcomp Require Import ssralg. *)
 Require Import lemmata.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Section Zagier_Proof.
+Section Elsholtz_Proof.
 Open Scope nat_scope.
 
 Variable p:nat.
@@ -27,15 +25,92 @@ Definition fixed_fsetN3:=(@fixed_fset [choiceType of N3]).
 Definition involutionN3_lemma:=(@involution_lemma [choiceType of N3]).
 Definition Ipfset:{fset nat} := [fsetval n in 'I_p].
 Definition Ipf3:{fset N3} := (Ipfset`*`Ipfset`*`Ipfset).
-Definition area (t:N3) :nat := (t.1.1)^2+2*(t.1.2)*(t.2).
+Definition area (t:N3) :nat := 3*(t.1.1)^2+4*(t.1.2)*(t.2).
 Definition S:{fset N3} := [fset t:N3 | t \in Ipf3 & (p == area(t))].
 Definition zig (t : N3) :N3 := (t.1.1, t.2, t.1.2).
-Definition jack (t:N3) :N3 := match t with (x,y,z) =>
- if 2 * y <= x then (x - 2 * y, z + 2 * x - 2 * y, y)
-   else if (2 * y <= 2 * x + z) then (2 * y - x, y, 2 * x + z - 2 * y)
-     else if (2 * y <= 3 * x + 2 * z) then (3 * x + 2 * z - 2 * y, 2 * x + 2 * z - y, 2 * y - (2 * x + z))
-       else if (2 * y <= 4 * x + 4 * z) then (2 * y - (3 * x + 2 * z), 2 * y - (2 * x + z), 2 * x + 2 * z - y)
-         else (x + 2 * z, z, y - (2 * x + 2 * z)) end.
+Definition elsholtz (t:N3) :N3 := match t with 
+(x,y,z) => if 2 * y <= x        then ( x - 2 * y , 3*x + z - 3*y , y )
+ else if 3 * y <= 3 * x + z     then ( 2 * y - x , y , 3 * x + z - 3 * y )
+ else if 4 * y <= 5 * x + 2 * z then ( 5 * x + 2 * z - 4 * y , 6 * x + 3 * z - 4 * y , 3 * y - (3 * x + z) )
+ else if 4 * y <= 6 * x + 3 * z then ( 4 * y - 5 * x - 2 * z , 3 * y - 3 * x - z , 6 * x + 3 * z - 4 * y )
+ else if 4 * y <= 7 * x + 4 * z then ( 7 * x + 4 * z - 4 * y , 6 * x + 4 * z - 3 * y , 4 * y - 6 * x - 3 * z )
+ else if 3 * y <= 6 * x + 4 * z then ( 4 * y - 7 * x - 4 * z , 4 * y - 6 * x - 3 * z , 6 * x + 4 * z - 3 * y )
+ else if 2 * y <= 5 * x + 4 * z then ( 5 * x + 4 * z - 2 * y , 3 * x + 3 * z - y , 3 * y - 6 * x - 4 * z )
+ else if     y <= 3 * x + 3 * z then ( 2 * y - 5 * x - 4 * z , 3 * y - 6 * x - 4 * z , 3 * x + 3 * z - y )
+                                else ( x + 2 * z , z , y - (3 * x + 3 * z) ) end.
+
+(* Work on stability *)
+
+Lemma foo1 (x y z : nat) : 2 * y <= x -> area(x,y,z)=area( elsholtz(x,y,z) ).
+Proof.
+move=> hle; rewrite/area/elsholtz.
+zag_solve.
+Qed.
+
+Lemma foo2 (x y z : nat) : 2 * y >= x -> 3 * y <= 3 * x + z 
+-> area(x,y,z)=area( elsholtz(x,y,z) ).
+Proof.
+move=> hge hle; rewrite/area/elsholtz.
+zag_solve.
+Qed.
+
+Lemma foo3 (x y z : nat) : (2 * y <= x)=false -> (3 * y <= 3 * x + z)=false -> 4 * y <= 5 * x + 2 * z
+-> area(x,y,z)=area( elsholtz(x,y,z) ).
+Proof.
+move=> hge1 hge2 hle; rewrite/area/elsholtz. zag_unfold. mcsolve.
+Qed.
+
+Lemma foo9 (x y z : nat) : (y <= 3 * x + 3 * z)=false
+-> area(x,y,z)=area( x + 2 * z , z , y - (3 * x + 3 * z) ).
+Proof.
+move=> hge; rewrite/area/elsholtz.
+zag_solve.
+Qed.
+
+Lemma foo4 (x y z : nat) : 4 * y >= 5 * x + 2 * z -> 4 * y <= 6 * x + 3 * z
+-> area(x,y,z)=area( elsholtz(x,y,z) ).
+Proof.
+move=> hge hle; rewrite/area/elsholtz.
+zag_solve.
+Qed.
+
+Lemma foo5 (x y z : nat) : 3 * y >= 3 * x + z -> 4 * y <= 5 * x + 2 * z
+-> area(x,y,z)=area( elsholtz(x,y,z) ).
+Proof.
+move=> hge hle; rewrite/area/elsholtz.
+zag_solve.
+Qed.
+
+
+
+
+Lemma elsholtz_involution: involutionN3 S elsholtz.
+Proof.
+rewrite/involution_on; split; move => [[x y] z].
+ - rewrite !inE /area /elsholtz /Ipfset /= => hin.
+zag_solve.
+   destruct_boolhyp hin => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   destruct harea_p as [hx' [hy' hz']].
+   case_eq (2 * y <= x).
+   zag_solve.
+   case_eq (2 * y <= 2 * x + z).
+   zag_solve.
+   case_eq (2 * y <= 3 * x + 2 * z).
+   intros.
+   repeat (apply /andP; split).
+   zag_solve.
+   zag_solve.
+   zag_solve.
+   rewrite /=.
+   have hhhh : 2 * x + 2 * z >= y by mcnia.
+   mcnia.
+ - rewrite !inE /jack => htS; destruct_boolhyp htS => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   zag_solve.
+Qed.
+
+
 
 Variable p_gt2 : p > 2.
 
@@ -205,5 +280,5 @@ have [t htzigfix]: exists t:N3, t \in (fixed_fsetN3 S zig).
 by apply (zig_solution htzigfix).
 Qed.
 
-End Zagier_Proof.
+End Elsholtz.
 Check Fermat_Zagier.

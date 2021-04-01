@@ -157,22 +157,18 @@ end) ||
 end); by (auto || mcnia)))) ||
 mccontradiction.
 
-Ltac zag_solve := (repeat match goal with
-| [|- context [let (X,Y) := ?Z in _]] => destruct Z as [X Y]
-| [|- context [if ?X then _ else _]] => case_eq X
-| [|- _ -> _] => intros
-| [|- (_, _) = (_,_)] => apply pair_eq
-| [H : (_, _) = (_,_) |- _] => inversion H; clear H
-| [H' : ?X |- context [if ?X then _ else _]] => rewrite H' /=
-| [|- _ /\ _] => split
-| [|- context [_ && _]] => apply (introT andP)
-| [|- context [_ == _]] => apply (introT eqP)
-| [H : _ /\ _ |- _] => let H' := fresh H in destruct H as [H H']
-| [H : context [_ && _] |- _] => destruct_boolhyp H
-| [H : context [_ || _] |- _] => destruct_boolhyp H
-| [H : context [_ \/ _] |- _] => apply (introT orP) in H; destruct_boolhyp H
-| [H : context [_ /\ _] |- _] => apply (introT andP) in H; destruct_boolhyp H
-end); repeat rewrite -> in_Imfset_eq; try mcsolve.
+Ltac zag_unfold := (repeat match goal with
+| [H' : context [?X] 
+|- context [if ?X then _ else _]] => rewrite H' /=| [|- context [let (X,Y) := ?Z in _]] => destruct Z as [X Y]
+| [|- context [if ?X then _ else _]] => case_eq X| [|- _ -> _] => intros| [|- (_, _) = (_,_)] => apply pair_eq
+| [H : (_, _) = (_,_) |- _] => inversion H; clear H| [|- _ /\ _] => split| [|- context [_ && _]] => apply (introT andP)
+| [|- context [_ == _]] => apply (introT eqP)| [H : _ /\ _ |- _] => let H' := fresh H in destruct H as [H H']
+| [H : context [_ && _] |- _] => destruct_boolhyp H| [H : context [_ || _] |- _] => destruct_boolhyp H
+| [H : context [_ \/ _] |- _] => apply (introT orP) in H; destruct_boolhyp H| [H : context [_ /\ _] 
+|- _] => apply (introT andP) in H; destruct_boolhyp H end); repeat rewrite -> in_Imfset_eq.
+
+Ltac zag_solve := zag_unfold; try mcsolve.
+
 
 Open Scope order_scope.
 Theorem strong_induction (p : nat -> Prop) :

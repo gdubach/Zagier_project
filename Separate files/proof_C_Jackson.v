@@ -5,19 +5,18 @@
 (* C. Elsholtz, and others ? *)
 (*                                                                            *)
 
-From mathcomp Require Import all_ssreflect ssrbool ssrnat eqtype ssrfun seq.
-From mathcomp Require Import choice path finset finfun fintype bigop finmap.
-From mathcomp Require Import ssralg order.
+From mathcomp Require Import all_ssreflect finmap.
 Require Import lemmata.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Section Zagier_Proof.
+Section Jackson_Proof.
 Open Scope nat_scope.
 
 Variable p:nat.
 Variable p_prime : prime p.
+Variable p_gt2 : p > 2.
 
 Definition N3 : Type := nat * nat * nat.
 Definition involutionN3:= (@involution_on [choiceType of N3]).
@@ -25,51 +24,15 @@ Definition fixed_fsetN3:=(@fixed_fset [choiceType of N3]).
 Definition involutionN3_lemma:=(@involution_lemma [choiceType of N3]).
 Definition Ipfset:{fset nat} := [fsetval n in 'I_p].
 Definition Ipf3:{fset N3} := (Ipfset`*`Ipfset`*`Ipfset).
-Definition area (t:N3) :nat := (t.1.1)^2+2*(t.1.2)*(t.2).
+Definition area (t:N3) :nat := (t.1.1)^2 + 2 * (t.1.2) * (t.2).
 Definition S:{fset N3} := [fset t:N3 | t \in Ipf3 & (p == area(t))].
 Definition zig (t : N3) :N3 := (t.1.1, t.2, t.1.2).
 Definition jack (t:N3) :N3 := match t with (x,y,z) =>
- if 2 * y <= x then (x - 2 * y, z + x + ( x - 2 * y), y)
-   else if (2 * y <= 2 * x + z) then (2 * y - x, y, (2 * x + z) - 2 * y)
-     else if (2 * y <= 3 * x + 2 * z) then ((3 * x + 2 * z) - 2 * y, (2 * x + z) - y + z, 2 * y - (2 * x + z))
-       else if (2 * y <= 4 * x + 4 * z) then (2 * y - (3 * x + 2 * z), 2 * y - (2 * x + z), 2 * x + 2 * z - y)
-         else (x + 2 * z, z, y - (2 * x + 2 * z)) end.
-
-Lemma foo1 (x y z : nat) : 2*y <= x -> area(x,y,z)=area(x - 2 * y, z + x + ( x - 2 * y), y).
-Proof. move=> hxy. unfold area. mcnia. Qed.
-
-Lemma foo2 (x y z : nat) : x <= 2*y -> (2 * y <= 2 * x + z) -> area(x,y,z)=area(2 * y - x, y, (2 * x + z) - 2 * y).
-Proof. move=> hx2y h2x2yz. unfold area. mcnia. Qed.
-
-Lemma foo3 (x y z : nat) : (2 * x + z <= 2*y) -> (2 * y <= 3 * x + 2 * z)
--> area(x,y,z)=area((3 * x + 2 * z) - 2 * y, (2 * x + z) - y + z, 2 * y - (2 * x + z)).
-Proof.
-move=> h2x2yz h2x3x2z. unfold area. simpl. mcnia.
-Qed. (* It DID work !!! But how long it took !*)
-
-Lemma foo42 (x y z : nat): (2 * x + z <= 2*y) -> (2 * y <= 3 * x + 2 * z) -> (y <= 2 * x + 2 * z).
-Proof. mcnia. Qed.
-
-Lemma foo4 (x y z : nat) : (2 * x + z <= 2*y) -> (2 * y <= 3 * x + 2 * z) -> (y <= 2 * x + 2 * z)
--> area(x,y,z)=area((3 * x + 2 * z) - 2 * y, (2 * x + 2 * z) - y , 2 * y - (2 * x + z)).
-Proof.
-move=> h2x2yz h2x3x2z h2x2y2z. unfold area. simpl. mcnia.
-Qed.
-
-Lemma foo5 (x y z : nat) : (2 * y >= 4 * x + 4 * z)
--> area(x,y,z)=area(x + 2 * z, z, y - (2 * x + 2 * z)).
-Proof.
-move=> h2y4x4z. unfold area. simpl. mcnia.
-Qed.
-
-
-Lemma foo5 (x y z : nat) : (2 * y >= 3 * x + 2 * z) -> (2 * y <= 4 * x + 4 * z)
--> area(x,y,z)=area(2 * y - (3 * x + 2 * z), 2 * y - (2 * x + z), 2 * x + 2 * z - y).
-Proof.
-move=> h2x3x2z h2x2y2z. unfold area. simpl. mcnia.
-Qed.
-
-Variable p_gt2 : p > 2.
+      if 2 * y <= x             then (x - 2 * y, z + x + ( x - 2 * y), y)
+ else if 2 * y <= 2 * x + z     then (2 * y - x, y, (2 * x + z) - 2 * y)
+ else if 2 * y <= 3 * x + 2 * z then ((3 * x + 2 * z) - 2 * y, (2 * x + 2*z) - y, 2 * y - (2 * x + z))
+ else if 2 * y <= 4 * x + 4 * z then (2 * y - (3 * x + 2 * z), 2 * y - (2 * x + z), 2 * x + 2 * z - y)
+                                else (x + 2 * z, z, y - (2 * x + 2 * z)) end.
 
 (*  Basic properties                                                          *)
 
@@ -145,9 +108,9 @@ have [/eqP hyes |/eqP hno] : (x == 1) \/ (x == p).
 by exfalso.
 Qed.
 
-Lemma bound_Sp: forall (t:N3), p = area t ->  t.1.1<p /\ t.1.2<p /\ t.2<p.
+Lemma bound_Sp: forall (x y z : nat), p = area (x,y,z) ->  x < p /\ y < p /\ z <p.
 Proof.
-move => [[x y] z] ; rewrite /area /= => Harea.
+move => x y z ; rewrite /area /= => Harea.
 have [/= Hxn0 [Hyn0 Hzn0]] := area_p Harea.
 split; [|split]; by_contradiction hcontra => //=;
   rewrite Harea in hcontra; rewrite -hcontra; mcnia.
@@ -170,9 +133,6 @@ exists t.1.1; exists ((t.2)).
 mcnia.
 Qed.
 
-Lemma foo (a b : nat) : (a<=b)=false -> (2*a-b)^2==4*a^2+b^2-4*a*b.
-Proof. mcnia. Qed.
-
 (* Study of the jack involution                                                *)
 
 Lemma jack_involution: involutionN3 S jack.
@@ -181,59 +141,57 @@ rewrite /involution_on; split; move => [[x y] z].
  - rewrite !inE /area /jack /Ipfset /= /area /jack => hin.
    destruct_boolhyp hin => hx hy hz /eqP hp.
    have harea_p := area_p hp.
-   destruct harea_p as [hx' [hy' hz']].
-   case_eq (2 * y <= x).
-   zag_solve.
-   case_eq (2 * y <= 2 * x + z).
-   zag_solve.
-   case_eq (2 * y <= 3 * x + 2 * z).
-   intros.
-   repeat (apply /andP; split).
-   zag_solve.
-   zag_solve.
-   zag_solve.
-   rewrite /=.
-   have hhhh : 2 * x + 2 * z >= y by mcnia.
-apply/eqP. rewrite hp. mcnia.
-   admit.
-admit.
+   have hboundp := bound_Sp hp.
+(* We distinguish the cases. Number 3 takes a lot of time. *)
+   + case_eq (2 * y <= x). zag_solve.
+   + case_eq (2 * y <= 2 * x + z). zag_solve.
+   + case_eq (2 * y <= 3 * x + 2 * z). simpl.
+     move=> h3 h2 h1; repeat (apply/andP; split).
+     admit. admit. admit. mcnia.
+   + case_eq (2 * y <= 4*x + 4 * z). zag_solve.
+   + zag_solve.
  - rewrite !inE /jack => htS; destruct_boolhyp htS => hx hy hz /eqP hp.
    have harea_p := area_p hp.
    zag_solve.
 Admitted.
 
-Lemma zag_fixed_point (k:nat): (p = k*8+3) -> (fixed_fsetN3 S jack)=[fset (1,1,4 * k + 1)].
+Lemma jack_fixed_point (k:nat): (p = k*8+3) -> (fixed_fsetN3 S jack)=[fset (1,1,4 * k + 1)].
 Proof.
-move => h_pmod4; apply/eqP; rewrite eqEfsubset; apply/andP; split.
+move => h_pmod8; apply/eqP; rewrite eqEfsubset; apply/andP; split.
  - apply/fsubsetP => t; move: t=>[[x y] z] /=.
-   rewrite !inE /jack /=.
+   rewrite !inE /jack /=. 
    move => hp; destruct_boolhyp hp => /= hx hy hz /eqP hp hxe.
+  have harea_p := area_p hp.
+  have hareaxy_p := area_p_xy hp.
+  hyp_progress hareaxy_p. generalize dependent hxe. zag_solve.
+zag_solve.
+case_eq (2 * y <= x). move => hypy. simpl. move=> h1 h2 h3. exfalso. zag_solve.
    have [hx0 [hy0 hz0]] := area_p hp.
    have hxy := (area_p_xy hp); hyp_progress hxy; generalize dependent hxe; zag_solve.
    rewrite /area in hp; simpl in *.
-   zag_solve. zag_solve.
+   zag_solve. zag_solve. admit. admit. admit.
  - apply/fsubsetP => x; rewrite !inE => /eqP -> /=.
-   have harea : p=area (1,1,4 * k + 1) by rewrite/area h_pmod4 /=; ring.
+   have harea : p=area (1,1,4 * k + 1) by rewrite/area h_pmod8 /=; ring.
    have [/= hbx [_ hbz]] := bound_Sp harea.
    repeat (apply/andP; split); try apply/in_Ipfset; zag_solve => //=.
-Qed.
+Admitted.
 
 (*                                                                            *)
-(*  Zagier's proof                                                            *)
-(*  (Zagier's 'one-sentence' is given as comments)                            *)
+(*  Jackson's   proof                                                         *)
+(*  (Zagier's one-sentence written as comment                                 *)
 (*                                                                            *)
 
-Theorem Fermat_Zagier : p %% 4 = 1 -> exists a b :nat, p=a^2 + b^2.
+Theorem Fermat_Jackson : p %% 8 = 3 -> exists a b :nat, p = a^2 + 2 * b^2.
 Proof.
 move /modulo_ex => [k hk].
-(* 'The involution on the finite set [S] defined by [zag]'                    *)
-have h_zag_invol:=zag_involution.
+(* 'The involution on the finite set [S] defined by [jack]'                    *)
+have h_jack_invol:=jack_involution.
 (* 'has exactly one fixed point,'                                             *)
-have h_zag_fix_card:(#|`(fixed_fsetN3 S zag)|) = 1.
-   - by rewrite (zag_fixed_point hk); first by apply: cardfs1.
+have h_jack_fix_card:(#|`(fixed_fsetN3 S jack)|) = 1.
+   - by rewrite (jack_fixed_point hk); first by apply: cardfs1.
 (* 'so |S| is odd,'                                                           *)
 have h_S_odd: odd(#|`S|).
-   by rewrite -(involutionN3_lemma h_zag_invol) h_zag_fix_card.
+   by rewrite -(involutionN3_lemma h_jack_invol) h_jack_fix_card.
 (* 'and the involution defined by [zig].'                                     *)
 have h_zig_invol:= zig_involution.
 (* 'also has a fixed point.'                                                  *)
@@ -242,5 +200,5 @@ have [t htzigfix]: exists t:N3, t \in (fixed_fsetN3 S zig).
 by apply (zig_solution htzigfix).
 Qed.
 
-End Zagier_Proof.
-Check Fermat_Zagier.
+End Jackson_Proof.
+Check Fermat_Jackson.

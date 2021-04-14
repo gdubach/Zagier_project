@@ -7,9 +7,7 @@
 (*                The American Mathematical Monthly 97 (1990), no.2, 144-144. *)
 (*                                                                            *)
 
-From mathcomp Require Import all_ssreflect ssrbool ssrnat eqtype ssrfun seq.
-From mathcomp Require Import choice path finset finfun fintype bigop finmap.
-From mathcomp Require Import ssralg order.
+From mathcomp Require Import all_ssreflect finmap.
 Require Import lemmata.
 Set Implicit Arguments.
 Unset Strict Implicit.

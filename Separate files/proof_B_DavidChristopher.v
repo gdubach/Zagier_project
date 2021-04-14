@@ -7,8 +7,7 @@
 (*    Discrete Mathematics 339 (2016), no. 4, 1410-1411.                      *)
 (*                                                                            *)
 
-From mathcomp Require Import all_ssreflect ssrbool ssrnat eqtype ssrfun seq.
-From mathcomp Require Import choice path finset finfun fintype bigop finmap.
+From mathcomp Require Import all_ssreflect finmap.
 Require Import lemmata.
 Set Implicit Arguments.
 Unset Strict Implicit.

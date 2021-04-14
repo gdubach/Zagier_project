@@ -147,13 +147,13 @@ rewrite /involution_on; split; move => [[x y] z].
    + case_eq (2 * y <= 2 * x + z). zag_solve.
    + case_eq (2 * y <= 3 * x + 2 * z). simpl.
      move=> h3 h2 h1; repeat (apply/andP; split).
-     admit. admit. admit. mcnia.
+     mcnia. mcnia. mcnia. mcnia.
    + case_eq (2 * y <= 4*x + 4 * z). zag_solve.
    + zag_solve.
  - rewrite !inE /jack => htS; destruct_boolhyp htS => hx hy hz /eqP hp.
    have harea_p := area_p hp.
    zag_solve.
-Admitted.
+Qed.
 
 Lemma jack_fixed_point (k:nat): (p = k*8+3) -> (fixed_fsetN3 S jack)=[fset (1,1,4 * k + 1)].
 Proof.

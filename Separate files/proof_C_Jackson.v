@@ -1,4 +1,4 @@
-(*  Additional file of Zagier Project                                         *)
+(*  File 4/5 of the proofs of Fermat's Two Squares Theorem                    *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (*  This proof is from:                                                       *)
@@ -68,6 +68,58 @@ Proof.
 rewrite /area => har h0; move: h0 har => -> /=.
 rewrite (expnD 0 1 1) (expn1 0) muln0 add0n.
 rewrite -mulnA => har; apply: _2_div_p; by rewrite har !dvdn_mulr.
+Qed.
+
+Lemma test n : n ^ 2 %% 8 != 7.
+rewrite -modnXm; move: (n %% 8) (ltn_mod n 8); do 8![case=> //].
+Qed.
+
+Lemma sum_sq_mod_8 (a b : nat): ~((a ^ 2 + b ^ 2) %% 8 = 3).
+Proof. 
+rewrite -modnDm -(modnXm 2 8 a) -(modnXm 2 8 b).
+have ha:= ltn_mod a 8.
+case_eq (a %% 8).
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move{n}=> n habs.
+rewrite habs // in ha.
+Qed.
+
+Lemma diff_sq_mod_8 (a b : nat): ~(a ^ 2 %% 8 = (2 * b ^ 2 + 3) %% 8).
+Proof.
+rewrite -modnDm -modnMmr -(modnXm 2 8 a) -(modnXm 2 8 b).
+have ha:= ltn_mod a 8.
+case_eq (a %% 8).
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move {n}=>n; case n.
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+move{n}=> n habs.
+rewrite habs // in ha.
 Qed.
 
 Lemma area_yz (x y z : nat) : p=area (x,y,z) -> ~((y = 0)\/(z = 0)).
@@ -155,26 +207,34 @@ rewrite /involution_on; split; move => [[x y] z].
    zag_solve.
 Qed.
 
-Lemma jack_fixed_point (k:nat): (p = k*8+3) -> (fixed_fsetN3 S jack)=[fset (1,1,4 * k + 1)].
+Lemma jack_fixed_point: (p %% 8 =3) -> exists k, (fixed_fsetN3 S jack)=[fset (1,1,4 * k + 1)].
 Proof.
-move => h_pmod8; apply/eqP; rewrite eqEfsubset; apply/andP; split.
+move => h_pmod8; have [k h_p8k3] := modulo_ex h_pmod8; exists k. 
+apply/eqP; rewrite eqEfsubset; apply/andP; split.
  - apply/fsubsetP => t; move: t=>[[x y] z] /=.
    rewrite !inE /jack /=. 
-   move => hp; destruct_boolhyp hp => /= hx hy hz /eqP hp hxe.
-  have harea_p := area_p hp.
-  have hareaxy_p := area_p_xy hp.
-  hyp_progress hareaxy_p. generalize dependent hxe. zag_solve.
-zag_solve.
-case_eq (2 * y <= x). move => hypy. simpl. move=> h1 h2 h3. exfalso. zag_solve.
-   have [hx0 [hy0 hz0]] := area_p hp.
-   have hxy := (area_p_xy hp); hyp_progress hxy; generalize dependent hxe; zag_solve.
-   rewrite /area in hp; simpl in *.
-   zag_solve. zag_solve. admit. admit. admit.
+   move => hp; destruct_boolhyp hp => /= hx hy hz /eqP hp hxe hye hze.
+   have hxy: x = y. move: hxe hye hze.
+   + case_eq (2 * y <= x). zag_solve.
+   + case_eq (2 * y <= 2 * x + z). zag_solve.
+   + case_eq (2 * y <= 3 * x + 2 * z). simpl.
+     move=> h3 h2 h1; repeat (apply/andP; split). move=> hxe hye hze.
+     have hsumsq: (x + z) ^ 2 + z ^ 2 = p by rewrite hp /area /=; mcnia.
+   (* This is ok because a sum of 2 sq cannot be 3 mod 8*)
+     exfalso; apply (@sum_sq_mod_8 (x + z) z); by rewrite hsumsq.
+   + case_eq (2 * y <= 4*x + 4 * z). simpl.
+     move=> h4 h3 h2 h1; repeat (apply/andP; split). move=> hxe hye hze.
+     have hsumsq: (x + 2 * z) ^ 2 = 2 * z ^ 2 + p by rewrite hp /area /=; mcnia.
+   (* This is ok because a^2-2b^2 cannot be 3 mod 8*)
+     exfalso; apply (@diff_sq_mod_8 (x + 2 * z) z). by rewrite hsumsq -modnDmr h_pmod8.
+   + zag_solve.
+   have [hx1 hy1] := area_p_xy hp hxy; move: hp {hxy hxe hye hze hx hy hz}.
+   rewrite/area h_p8k3 {}hx1 {}hy1 /=; zag_solve.
  - apply/fsubsetP => x; rewrite !inE => /eqP -> /=.
-   have harea : p=area (1,1,4 * k + 1) by rewrite/area h_pmod8 /=; ring.
+   have harea : p=area (1,1,4 * k + 1) by rewrite/area h_p8k3 /=; ring.
    have [/= hbx [_ hbz]] := bound_Sp harea.
    repeat (apply/andP; split); try apply/in_Ipfset; zag_solve => //=.
-Admitted.
+Qed.
 
 (*                                                                            *)
 (*  Jackson's   proof                                                         *)
@@ -183,12 +243,14 @@ Admitted.
 
 Theorem Fermat_Jackson : p %% 8 = 3 -> exists a b :nat, p = a^2 + 2 * b^2.
 Proof.
-move /modulo_ex => [k hk].
+(* move /modulo_ex => [k hk].*)
+move=> h_pmod8.
 (* 'The involution on the finite set [S] defined by [jack]'                    *)
 have h_jack_invol:=jack_involution.
 (* 'has exactly one fixed point,'                                             *)
 have h_jack_fix_card:(#|`(fixed_fsetN3 S jack)|) = 1.
-   - by rewrite (jack_fixed_point hk); first by apply: cardfs1.
+   - have [k hk]:= (jack_fixed_point h_pmod8). 
+     by rewrite hk; first by apply: cardfs1.
 (* 'so |S| is odd,'                                                           *)
 have h_S_odd: odd(#|`S|).
    by rewrite -(involutionN3_lemma h_jack_invol) h_jack_fix_card.

@@ -1,4 +1,4 @@
-(*  Additional file of Zagier project                                         *)
+(*  File 5/5 of the proofs of Fermat's Two Squares Theorem                    *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (*  This proof is from:                                                       *)
@@ -7,7 +7,6 @@
 
 From mathcomp Require Import all_ssreflect.
 From mathcomp Require Import finmap.
-(* From mathcomp Require Import ssralg. *)
 Require Import lemmata.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -18,6 +17,7 @@ Open Scope nat_scope.
 
 Variable p:nat.
 Variable p_prime : prime p.
+Variable p_gt2 : p > 2.
 
 Definition N3 : Type := nat * nat * nat.
 Definition involutionN3:= (@involution_on [choiceType of N3]).
@@ -40,6 +40,100 @@ Definition elsholtz (t:N3) :N3 := match t with
                                 else ( x + 2 * z , z , y - (3 * x + 3 * z) ) end.
 
 (* Work on stability *)
+
+Lemma _2_div_p : (2 %|p) -> False.
+Proof.
+move => h2p.
+have p_2 : 2 == p.
+by rewrite -(dvdn_prime2 _ p_prime).
+have hpgt2 := p_gt2.
+by rewrite (eqP p_2) ltnn in hpgt2.
+Qed.
+
+Lemma _4_div_p : (4 %|p) -> False.
+Proof.
+move => h4p.
+have /_2_div_p h2p: 2%|p by apply (@dvdn_trans 4 2 p).
+by [].
+Qed.
+
+Lemma area_p (x y z : nat) : p = area (x,y,z) -> x > 0 /\ y > 0 /\ z > 0.
+Proof.
+Admitted.
+
+Lemma area_p_xy (x y z : nat) : p = area (x,y,z) -> x = y -> x = 1 /\ y = 1.
+Proof.
+Admitted.
+
+Lemma bound_Sp: forall (x y z : nat), p = area (x,y,z) ->  x < p /\ y < p /\ z <p.
+Proof.
+move => x y z ; rewrite /area /= => Harea.
+have [/= Hxn0 [Hyn0 Hzn0]] := area_p Harea.
+split; [|split]; by_contradiction hcontra => //=;
+  rewrite Harea in hcontra; rewrite -hcontra; mcnia.
+Qed.
+
+Lemma elsholtz_involution: involutionN3 S elsholtz.
+Proof.
+rewrite/involution_on; split; move => [[x y] z]. admit. 
+ - rewrite !inE /elsholtz => htS; destruct_boolhyp htS => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   zag_solve.
+zag_solve.
+ - rewrite !inE /area /elsholtz /Ipfset /= => hin.
+  destruct_boolhyp hin => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   have hboundp := bound_Sp hp.
+   + case_eq (2 * y <= x). move=> h1.
+repeat (apply/andP; split). mcnia. admit. mcnia. mcnia.
+   + case_eq (3 * y <= 3 * x + z). zag_solve.
+   + case_eq (4 * y <= 5 * x + 2 * z). zag_solve.
+   + case_eq (4 * y <= 6 * x + 3 * z).
+   + case_eq (4 * y <= 7 * x + 4 * z).
+   + case_eq (3 * y <= 6 * x + 4 * z).
+   + case_eq (2 * y <= 5 * x + 4 * z).
+
+zag_solve.
+   destruct_boolhyp hin => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   destruct harea_p as [hx' [hy' hz']].
+   case_eq (2 * y <= x).
+   zag_solve.
+   case_eq (2 * y <= 2 * x + z).
+   zag_solve.
+   case_eq (2 * y <= 3 * x + 2 * z).
+   intros.
+   repeat (apply /andP; split).
+   zag_solve.
+   zag_solve.
+   zag_solve.
+   rewrite /=.
+   have hhhh : 2 * x + 2 * z >= y by mcnia.
+   mcnia.
+ - rewrite !inE /jack => htS; destruct_boolhyp htS => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   zag_solve.
+Qed.
+
+Lemma jack_involution: involutionN3 S jack.
+Proof.
+rewrite /involution_on; split; move => [[x y] z].
+ - rewrite !inE /area /jack /Ipfset /= /area /jack => hin.
+   destruct_boolhyp hin => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   have hboundp := bound_Sp hp.
+(* We distinguish the cases. Number 3 takes a lot of time. *)
+   + case_eq (2 * y <= x). zag_solve.
+   + case_eq (2 * y <= 2 * x + z). zag_solve.
+   + case_eq (2 * y <= 3 * x + 2 * z). simpl.
+     move=> h3 h2 h1; repeat (apply/andP; split).
+     mcnia. mcnia. mcnia. mcnia.
+   + case_eq (2 * y <= 4*x + 4 * z). zag_solve.
+   + zag_solve.
+ - rewrite !inE /jack => htS; destruct_boolhyp htS => hx hy hz /eqP hp.
+   have harea_p := area_p hp.
+   zag_solve.
+Qed.
 
 Lemma foo1 (x y z : nat) : 2 * y <= x -> area(x,y,z)=area( elsholtz(x,y,z) ).
 Proof.
@@ -261,7 +355,7 @@ Qed.
 (*  (Zagier's 'one-sentence' is given as comments)                            *)
 (*                                                                            *)
 
-Theorem Fermat_Zagier : p %% 4 = 1 -> exists a b :nat, p=a^2 + b^2.
+Theorem Fermat_Elsholtz : p %% 4 = 1 -> exists a b :nat, p=a^2 + b^2.
 Proof.
 move /modulo_ex => [k hk].
 (* 'The involution on the finite set [S] defined by [zag]'                    *)
@@ -281,4 +375,4 @@ by apply (zig_solution htzigfix).
 Qed.
 
 End Elsholtz.
-Check Fermat_Zagier.
+Check Fermat_Elsholtz.

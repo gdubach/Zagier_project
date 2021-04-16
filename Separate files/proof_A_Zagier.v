@@ -1,4 +1,4 @@
-(*  File 2/3 of the proofs of Fermat's Two Squares Theorem                    *)
+(*  File 2/5 of the proofs of Fermat's Two Squares Theorem                    *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (*  This proof is from:                                                       *)

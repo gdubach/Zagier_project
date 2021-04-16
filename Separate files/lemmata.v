@@ -1,4 +1,4 @@
-(*  File 1/3 of the proofs of Fermat's Two Squares Theorem                    *)
+(*  File 1/5 of the proofs of Fermat's Two Squares Theorem                    *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (* This files contains ad-hoc tactics and a preliminary result on involutions.*)

@@ -1,8 +1,4 @@
-(*  File 5/5 of the proofs of Fermat's Two Squares Theorem                    *)
-(*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
-(*                                                                            *)
-(*  This proof is from:                                                       *)
-(* Elsholtz*)
+(*  Zagier's project - this file is still work in progress                    *)
 (*                                                                            *)
 
 From mathcomp Require Import all_ssreflect.

@@ -1,4 +1,4 @@
-(*  File 2/5 of the proofs of Fermat's Two Squares Theorem                    *)
+(*  File 2/4 of the proofs of Fermat's Two Squares Theorem                    *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (*  This proof is from:                                                       *)
@@ -185,4 +185,3 @@ by apply (zig_solution htzigfix).
 Qed.
 
 End Zagier_Proof.
-Check Fermat_Zagier.

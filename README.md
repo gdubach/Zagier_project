@@ -1,15 +1,13 @@
 # Zagier_project
-Formal verification of Zagier's one-sentence proof of Fermat's Theorem and related proofs.
+Formal verification of Zagier's one-sentence proof of Fermat's two squares Theorem, and related proofs.
 
-The code can be run either in one block (all_proofs.v) or as four separate files (see folder Separate_files).
+- The file lemmata.v contains prerequisites and should be compiled first.
 
-The file lemmata.v contains the prerequisites and should be compiled first.
+- proof_A_Zagier.v contains Zagier's one-sentence proof.
 
-proof_A_Zagier.v contains Zagier's one-sentence proof.
+- proof_B_DavidChristopher.v contains another short proof of Fermat's theorem due to David Christopher.
 
-proof_B_partitions.v contains another short proof of Fermat's theorem.
-
-proof_C_Jackson contains a proof of another related result, following Zagier's approach.
+- proof_C_Jackson contains a proof of another related result, following Zagier's approach.
 
 
 Required: Coq 8.13.0 and Mathcomp 1.12.0 or later versions.

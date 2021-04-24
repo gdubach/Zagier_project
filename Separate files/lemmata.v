@@ -101,9 +101,7 @@ end.
 Lemma ltn_asymmetric : forall n m, (n < m) && (m < n) = false.
 Proof.
   move => n m.
-  destruct (n < m) eqn: hnm; destruct (m < n) eqn: hmn; try by auto.
-  rewrite ltnNge leq_eqVlt negb_or in hnm; destruct_boolhyp hnm => hnm hnm'.
-  by rewrite hmn in hnm'.
+  by rewrite ltnNge ltn_neqAle andbC -andbA andbN andbF.
 Qed.
 
 Ltac mccontradiction := by (mcsimpl; try subst; contradiction) || by (try subst; match goal with

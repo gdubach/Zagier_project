@@ -250,7 +250,7 @@ apply /andP; split;
   apply (elimT (imfsetP _ _ _ _)) in hin.
   move: hin => [x hin heq].
   inversion heq; subst; clear heq.
-  apply in_Imfset in hin.
+  rewrite in_Imfset_eq in hin.
   have hxp : 2 * x < (p - 2).
   + have hpgt2 : p > 2.
     - by_contradiction hcontra.

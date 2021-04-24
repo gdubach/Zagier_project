@@ -1,4 +1,4 @@
-(*  File 3/5 of the proofs of Fermat's Two Squares Theorem                    *)
+(*  File 3/4 of the proofs of Fermat's Two Squares Theorem                    *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (*  This proof is from:                                                       *)
@@ -299,7 +299,9 @@ apply mod4_halfeven in hmod.
 by rewrite -eqb0 -modn2.
 Qed.
 
-Lemma card_disjoint_triple {K : choiceType} (A B C : {fset K}) : A `&` B = fset0 -> A `&` C = fset0 -> B `&` C = fset0 -> #|` A `|` B `|` C | = #|` A | + #|` B | + #|` C |.
+Lemma card_disjoint_triple {K : choiceType} (A B C : {fset K}) : 
+A `&` B = fset0 -> A `&` C = fset0 -> B `&` C = fset0 
+-> #|` A `|` B `|` C | = #|` A | + #|` B | + #|` C |.
 Proof.
 move => hab hac hbc.
 have hui1 := (cardfsUI (A `|` B) C).
@@ -380,5 +382,3 @@ rewrite involution_lemma.
 Qed.
 
 End Partition_Proof.
-Check Fermat_David_Christopher.
-

@@ -1,14 +1,12 @@
-(*  File 1/5 of the proofs of Fermat's Two Squares Theorem                    *)
+(*  File 1/4 of the proofs of Fermat's Two Squares Theorem                    *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (* This files contains ad-hoc tactics and a preliminary result on involutions.*)
 (*                                                                            *)
 
-From mathcomp Require Import all_ssreflect ssrbool ssrnat eqtype ssrfun seq.
-From mathcomp Require Import choice path finset finfun fintype bigop finmap.
-From mathcomp Require Import ssralg order.
+From mathcomp Require Import all_ssreflect finmap.
 Require Import Psatz.
-Import Order.TTheory GRing.Theory.
+Import Order.TTheory.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -17,20 +15,11 @@ Open Scope nat_scope.
 
 (*  Ad-hoc tactics                                                            *)
 
-Lemma in_Imfset (n m : nat) : (n \in [fsetval x in 'I_m]) <-> (leq (S n) m).
-Proof.
-split; first by move => /imfsetP /= [x _ ->].
-by move => hnp; apply/imfsetP; exists (Sub n hnp).
-Qed.
-
 Lemma in_Imfset_eq {n m : nat} : (n \in [fsetval x in 'I_m]) = leq (S n) m.
 Proof.
-destruct (_ < _) eqn: hlt.
-- by apply in_Imfset in hlt.
-- destruct (_ \in _) eqn: hin.
-  + apply in_Imfset in hin.
-    by rewrite hin in hlt.
-  + by [].
+apply Bool.eq_true_iff_eq; split.
+by move => /imfsetP /= [x h1 ->]; apply ltn_ord.
+by move => hnp; apply/imfsetP; exists (Sub n hnp).
 Qed.
 
 Ltac mcsimpl := repeat match goal with
@@ -370,4 +359,3 @@ by apply odd_gt0.
 Qed.
 
 End Involution_Lemma.
-Check involution_lemma.

@@ -1,8 +1,9 @@
-(*  File 4/5 of the proofs of Fermat's Two Squares Theorem                    *)
+(*  File 4/4 of the proofs of Fermat's Two Squares Theorem                    *)
 (*                          by G. Dubach and F. Muehlboeck, IST Austria, 2021 *)
 (*                                                                            *)
 (*  This proof is from:                                                       *)
-(* C. Elsholtz, and others ? *)
+(* T. Jackson, A short proof that every prime p equals 3 (mod 8) is of the    *)
+(* form x (2)+ 2y (2), The American Mathematical Monthly 107(2000) no. 5, 447.*)
 (*                                                                            *)
 
 From mathcomp Require Import all_ssreflect finmap.
@@ -254,4 +255,3 @@ by apply (zig_solution htzigfix).
 Qed.
 
 End Jackson_Proof.
-Check Fermat_Jackson.

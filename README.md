@@ -5,7 +5,7 @@ Formal verification of Zagier's one-sentence proof of Fermat's two squares Theor
 
 - proof_A_Zagier.v contains Zagier's one-sentence proof.
 
-- proof_B_partitions.v contains another short proof of Fermat's theorem due to David Christopher.
+- proof_B_DavidChristopher.v contains another short proof of Fermat's theorem due to David Christopher.
 
 - proof_C_Jackson contains a proof of another related result, following Zagier's approach.
 

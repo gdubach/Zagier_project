@@ -195,14 +195,7 @@ rewrite /involution_on; split; move => [[x y] z].
    destruct_boolhyp hin => hx hy hz /eqP hp.
    have harea_p := area_p hp.
    have hboundp := bound_Sp hp.
-(* We distinguish the cases. Number 3 takes a lot of time. *)
-   + case_eq (2 * y <= x). zag_solve.
-   + case_eq (2 * y <= 2 * x + z). zag_solve.
-   + case_eq (2 * y <= 3 * x + 2 * z). simpl.
-     move=> h3 h2 h1; repeat (apply/andP; split).
-     mcnia. mcnia. mcnia. mcnia.
-   + case_eq (2 * y <= 4*x + 4 * z). zag_solve.
-   + zag_solve.
+   zag_solve.
  - rewrite !inE /jack => htS; destruct_boolhyp htS => hx hy hz /eqP hp.
    have harea_p := area_p hp.
    zag_solve.
@@ -216,19 +209,17 @@ apply/eqP; rewrite eqEfsubset; apply/andP; split.
    rewrite !inE /jack /=. 
    move => hp; destruct_boolhyp hp => /= hx hy hz /eqP hp hxe hye hze.
    have hxy: x = y. move: hxe hye hze.
-   + case_eq (2 * y <= x). zag_solve.
-   + case_eq (2 * y <= 2 * x + z). zag_solve.
-   + case_eq (2 * y <= 3 * x + 2 * z). simpl.
-     move=> h3 h2 h1; repeat (apply/andP; split). move=> hxe hye hze.
+   zag_solve. 
+   (* this leaves two special cases that cannot not be completely discharged *)
+   + (* (2 * y <= 3 * x + 2 * z) *)
      have hsumsq: (x + z) ^ 2 + z ^ 2 = p by rewrite hp /area /=; mcnia.
    (* This is ok because a sum of 2 sq cannot be 3 mod 8*)
      exfalso; apply (@sum_sq_mod_8 (x + z) z); by rewrite hsumsq.
-   + case_eq (2 * y <= 4*x + 4 * z). simpl.
-     move=> h4 h3 h2 h1; repeat (apply/andP; split). move=> hxe hye hze.
+   + (* (2 * y <= 4*x + 4 * z) *)
      have hsumsq: (x + 2 * z) ^ 2 = 2 * z ^ 2 + p by rewrite hp /area /=; mcnia.
    (* This is ok because a^2-2b^2 cannot be 3 mod 8*)
-     exfalso; apply (@diff_sq_mod_8 (x + 2 * z) z). by rewrite hsumsq -modnDmr h_pmod8.
-   + zag_solve.
+     exfalso; apply (@diff_sq_mod_8 (x + 2 * z) z).
+     by rewrite hsumsq -modnDmr h_pmod8.
    have [hx1 hy1] := area_p_xy hp hxy; move: hp {hxy hxe hye hze hx hy hz}.
    rewrite/area h_p8k3 {}hx1 {}hy1 /=; zag_solve.
  - apply/fsubsetP => x; rewrite !inE => /eqP -> /=.

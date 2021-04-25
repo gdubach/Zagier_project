@@ -81,20 +81,8 @@ rewrite -modnDm -(modnXm 2 8 a) -(modnXm 2 8 b).
 have ha:= ltn_mod a 8.
 case_eq (a %% 8).
 move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+do 7 (let n' := fresh n in move =>n'; case n'; [
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //]|]).
 move{n}=> n habs.
 rewrite habs // in ha.
 Qed.
@@ -105,20 +93,8 @@ rewrite -modnDm -modnMmr -(modnXm 2 8 a) -(modnXm 2 8 b).
 have ha:= ltn_mod a 8.
 case_eq (a %% 8).
 move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
-move {n}=>n; case n.
-move: (b %% 8) (ltn_mod b 8); do 8![case=> //].
+do 7 (let n' := fresh n in move =>n'; case n'; [
+move: (b %% 8) (ltn_mod b 8); do 8![case=> //]|]).
 move{n}=> n habs.
 rewrite habs // in ha.
 Qed.
